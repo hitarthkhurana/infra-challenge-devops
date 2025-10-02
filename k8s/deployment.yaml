@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-challenge
+  labels:
+    app: devops-challenge
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: devops-challenge
+  template:
+    metadata:
+      labels:
+        app: devops-challenge
+    spec:
+      containers:
+      - name: devops-challenge
+        image: ghcr.io/polymarket/infra-challenge-devops/devops-challenge:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: VERSION
+          value: "1.0.0"
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: api-key
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+
